@@ -1,0 +1,4 @@
+upgrade:
+  preflightChecks: false
+dbNamespace:
+  enabled: false

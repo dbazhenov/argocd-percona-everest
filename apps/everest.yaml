@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: everest
+  namespace: argocd
+spec:
+  destination:
+    namespace: everest-system
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://github.com/dbazhenov/argocd-public.git
+    path: charts/
+    targetRevision: main
+    helm:
+      values: values-everest.yaml
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
