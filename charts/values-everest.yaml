@@ -1,4 +1,8 @@
+namespaceOverride: everest-system
 upgrade:
   preflightChecks: false
 dbNamespace:
   enabled: false
+server:
+  service:
+    type: LoadBalancer

@@ -9,17 +9,15 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://percona.github.io/percona-helm-charts/
-    chart: everest
-    targetRevision: 1.6.0
+    repoURL: https://github.com/dbazhenov/argocd-public.git
+    path: configs/
+    targetRevision: main
     helm:
-      parameters:
-      - name: upgrade.preflightChecks
-        value: "false"
-      - name: dbNamespace.enabled
-        value: "false"
-      - name: server.service.type
-        value: "LoadBalancer"
+      chart: everest
+      repoURL: https://percona.github.io/percona-helm-charts/  
+      targetRevision: 1.6.0
+      valueFiles:
+            - configs/values-everest.yaml
   syncPolicy:
     automated:
       prune: true
