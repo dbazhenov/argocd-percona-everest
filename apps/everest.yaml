@@ -18,6 +18,8 @@ spec:
         value: "false"
       - name: dbNamespace.enabled
         value: "false"
+      - name: server.service.type
+        value: "LoadBalancer"
   syncPolicy:
     automated:
       prune: true
