@@ -13,11 +13,29 @@ spec:
     chart: everest
     targetRevision: 1.6.0
     helm:
-      valueFiles:
-      - values-everest.yaml
+      parameters:
+      - name: upgrade.preflightChecks
+        value: "false"
+      - name: dbNamespace.enabled
+        value: "false"
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - RespectIgnoreDifferences=true
+    - ServerSideApply=true
+  ignoreDifferences:
+  - group: ""
+    jsonPointers:
+    - /data
+    kind: Secret
+    name: everest-jwt
+    namespace: everest-system
+  - group: ""
+    jsonPointers:
+    - /data
+    kind: Secret
+    name: everest-accounts
+    namespace: everest-system
