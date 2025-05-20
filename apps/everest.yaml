@@ -5,16 +5,19 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    namespace: everest-system
+    namespace: everest
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://github.com/dbazhenov/argocd-public.git
-    path: charts/
-    targetRevision: main
+    repoURL: https://percona.github.io/percona-helm-charts/
+    chart: everest
+    targetRevision: 1.6.0
     helm:
-      values: values-everest.yaml
+      valueFiles:
+      - values-everest.yaml
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
