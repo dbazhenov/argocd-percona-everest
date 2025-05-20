@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    namespace: everest
+    namespace: everest-system
     server: https://kubernetes.default.svc
   project: default
   source:
