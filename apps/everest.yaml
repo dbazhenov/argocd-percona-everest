@@ -9,22 +9,23 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://github.com/dbazhenov/argocd-public.git
-    path: configs/
-    targetRevision: main
+    repoURL: https://percona.github.io/percona-helm-charts/ 
+    chart: everest  
+    targetRevision: 1.6.0  
     helm:
-      chart: everest
-      repoURL: https://percona.github.io/percona-helm-charts/  
-      targetRevision: 1.6.0
-      valueFiles:
-            - configs/values-everest.yaml
+      parameters:
+      - name: server.service.type
+        value: "LoadBalancer"
+      - name: upgrade.preflightChecks
+        value: "false"
+      - name: dbNamespace.enabled
+        value: "false"
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
-    - RespectIgnoreDifferences=true
     - ServerSideApply=true
   ignoreDifferences:
   - group: ""
