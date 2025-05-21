@@ -1,6 +1,6 @@
 # Percona Everest GitOps Deployment with Argo CD
 
-This repository demonstrates how to deploy [Percona Everest](https://www.percona.com/software/percona-everest) using a GitOps approach with [Argo CD](https://argoproj.github.io/cd/). Percona Everest simplifies the deployment and management of Percona database distributions (MongoDB, PostgreSQL, MySQL) on Kubernetes.
+This repository demonstrates how to deploy [Percona Everest](https://www.percona.com/software/percona-everest) using a GitOps approach with [Argo CD](https://argoproj.github.io/cd/). Percona Everest simplifies the deployment and management of Percona database distributions (MongoDB, PostgreSQL, MySQL) on Kubernetes, along with integrated Percona Monitoring and Management (PMM).
 
 -----
 
@@ -10,7 +10,7 @@ Before you begin, ensure you have:
 
   * A running Kubernetes cluster (e.g., Minikube, Kind, GKE, EKS, AKS).
   * `kubectl` configured to connect to your cluster.
-  * **Argo CD installed and configured** in your Kubernetes cluster. If not, refer to the [Argo CD Installation Guide](https://www.google.com/search?q=%23argo-cd-installation-guide) at the end of this README.
+  * **Argo CD installed and configured** in your Kubernetes cluster. If not, refer to the [Argo CD Installation Guide](#argo-cd-installation-guide) at the end of this README.
 
 -----
 
@@ -21,7 +21,6 @@ This repository contains Argo CD `Application` manifests that define how Percona
   * The `apps/everest.yaml` defines the core Everest UI and PMM integration.
   * The `apps/everest-db.yaml` defines the Percona Database Operators. It's configured to automatically approve OLM `InstallPlans` for the MongoDB, PostgreSQL, and XtraDB Cluster operators, ensuring a seamless deployment.
 
-<!-- end list -->
 
 1.  **Deploy the Everest Core Application:**
 
@@ -46,6 +45,18 @@ This repository contains Argo CD `Application` manifests that define how Percona
     ```
 
     Wait until both applications show **`STATUS Synced`** and **`HEALTH Healthy`**. This might take a few minutes as Kubernetes resources are provisioned and operators start.
+
+    Here's an overview of the deployed applications in Argo CD:
+
+    ![Percona Everest + ArgoCD: Argo CD Applications Dashboard showing Everest and Everest-DB are Healthy and Synced](./img/argocd-apps.png)
+
+    _Fig 1: Argo CD Applications Dashboard showing Everest and Everest-DB are Healthy and Synced._
+
+    A detailed view of the Everest-DB application within Argo CD, illustrating the deployed operators:
+
+    ![Percona Everest + ArgoCD: Detailed view of the Everest-DB application in Argo CD, showing the deployed Percona database operators.](./img/argocd-everest.png)
+
+    _Fig 2: Detailed view of the Everest-DB application in Argo CD, showing the deployed Percona database operators._
 
 4.  **Verify Operator Pods:**
 
@@ -105,6 +116,9 @@ After modifying the file, run `kubectl apply -f apps/everest.yaml -n argocd` aga
 
         Look for the **`everest`** and **`pmm`** services. If they show an **`EXTERNAL-IP`**, use that to access the UIs in your browser.
 
+          * **For Everest UI:** Navigate to `https://<EXTERNAL-IP_OF_EVEREST_SVC>:8080`
+          * **For PMM UI:** Navigate to `http://<EXTERNAL-IP_OF_PMM_SVC>` (PMM typically uses port 80/443 for UI)
+
       * **If using `ClusterIP` (or for local access):**
         Use `kubectl port-forward` to temporarily expose the services to your local machine.
 
@@ -117,6 +131,17 @@ After modifying the file, run `kubectl apply -f apps/everest.yaml -n argocd` aga
         ```
 
         Then, navigate to `https://localhost:8080` for Everest and `http://localhost:8081` for PMM in your browser.
+
+    Here's an example of the Percona Everest UI dashboard showing deployed databases:
+
+    ![Percona Everest + ArgoCD: Percona Everest UI dashboard](./img/percona-everest.png)
+
+    *Fig 3: Percona Everest UI displaying a list of managed database clusters.*
+
+    And here's a view of the PMM dashboard integrated with Everest:
+
+    ![Percona Everest + ArgoCD: Percona Monitoring and Management (PMM) dashboard](./img/everest-pmm.png)
+    *Fig 4: Percona Monitoring and Management (PMM) dashboard providing insights into monitored database services and instances.*
 
 You're now ready to log into the Percona Everest UI (username `admin`, password retrieved from `everest-accounts` secret) and begin deploying and managing your database clusters\!
 
@@ -169,13 +194,27 @@ If Argo CD is not yet installed in your Kubernetes cluster, follow these detaile
 
     **Save this password.** This password is only for the first login.
 
-6.  **Port-Forward Argo CD UI (Optional for initial setup):**
+6.  **Access Argo CD UI for Initial Login:**
 
-    ```bash
-    kubectl port-forward svc/argocd-server -n argocd 8080:443
-    ```
+    To access the Argo CD web UI for the first time, you'll need its IP address and the initial admin password.
 
-    Now, you can access the Argo CD UI in your browser at `https://localhost:8080`. Log in with username **`admin`** and the password you retrieved.
+      * **Port-Forward (recommended for local setup):**
+
+        ```bash
+        kubectl port-forward svc/argocd-server -n argocd 8080:443
+        ```
+
+        Then, open your browser to `https://localhost:8080`.
+
+      * **Get External IP (if using LoadBalancer/NodePort):**
+
+        ```bash
+        kubectl get svc argocd-server -n argocd
+        ```
+
+        Look for the `EXTERNAL-IP` or `NODEPORT`.
+
+    Log in to the Argo CD UI with username **`admin`** and the password you retrieved from `argocd admin initial-password`.
 
 7.  **Log in to Argo CD CLI:**
 
