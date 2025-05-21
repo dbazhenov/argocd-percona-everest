@@ -9,9 +9,9 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://percona.github.io/percona-helm-charts/ 
-    chart: everest  
-    targetRevision: 1.6.0  
+    repoURL: https://percona.github.io/percona-helm-charts/
+    chart: everest
+    targetRevision: 1.6.0
     helm:
       parameters:
       - name: server.service.type
@@ -26,6 +26,7 @@ spec:
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - RespectIgnoreDifferences=true
     - ServerSideApply=true
   ignoreDifferences:
   - group: ""
@@ -40,3 +41,15 @@ spec:
     kind: Secret
     name: everest-accounts
     namespace: everest-system
+  - group: ""
+    jsonPointers:
+    - /data
+    kind: Secret
+    name: packageserver-service-cert
+    namespace: everest-olm
+  - group: apiregistration.k8s.io
+    jqPathExpressions:
+    - .spec.caBundle
+    - .metadata.annotations
+    kind: APIService
+    name: v1.packages.operators.coreos.com

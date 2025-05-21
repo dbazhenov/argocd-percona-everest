@@ -5,14 +5,17 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    namespace: everest
+    namespace: databases
     server: https://kubernetes.default.svc
   project: default
   source:
-    chart: everest-db-namespace
     repoURL: https://percona.github.io/percona-helm-charts/
+    chart: everest-db-namespace
     targetRevision: 1.6.0
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
     - CreateNamespace=true
     - ServerSideApply=true
