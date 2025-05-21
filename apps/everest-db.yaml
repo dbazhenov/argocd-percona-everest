@@ -1,52 +1,34 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: everest-db
+  name: everest-db-namespace # A distinct name for this Argo CD Application
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://percona.github.io/percona-helm-charts/
-    targetRevision: 1.6.0
-    chart: everest-db-namespace
+    chart: everest-db-namespace # The chart name
+    targetRevision: 1.6.0 # Match the version of your main everest chart for compatibility
     helm:
-      values: |
-        # Configuration for the MongoDB Operator
-        mongodb:
-          enabled: true # Set to true to enable the MongoDB Operator installation
-          installPlanApproval: Automatic # Automatically approve OLM InstallPlan for this operator
-          # The following values are for a MongoDB database instance.
-          # Since you only want the operator, these can be commented out or removed.
-          # If you set enabled: false above, these would be ignored anyway.
-          # size: 1
-          # databaseType: "psmdb"
-          # psmdb:
-          #   crVersion: "1.16.0"
-          #   image: "percona/percona-server-mongodb:6.0.12-10"
-          #   allowUnsafeConfigurations: true
-          #   replsets:
-          #     - name: rs0
-          #       size: 1
-          #       volumeSpec:
-          #         persistentVolumeClaim:
-          #           resources:
-          #             requests:
-          #               storage: 2Gi
-        # Configuration for the PostgreSQL Operator
-        postgresql:
-          enabled: true # Set to true to enable the PostgreSQL Operator installation
-          installPlanApproval: Automatic # Automatically approve OLM InstallPlan for this operator
-          # Add any PostgreSQL-specific values here if needed for the operator itself,
-          # or if you plan to enable instance creation directly via this chart later.
-        # Configuration for the XtraDB Cluster Operator
-        pxc:
-          enabled: true # Set to true to enable the XtraDB Cluster Operator installation
-          installPlanApproval: Automatic # Automatically approve OLM InstallPlan for this operator
-          # Add any XtraDB-specific values here if needed for the operator itself,
-          # or if you plan to enable instance creation directly via this chart later.
+      parameters:
+        # No namespaceOverride here, as it's defined in destination.namespace
+        # Enable / Disable operators within this namespace
+      - name: psmdb.enabled
+        value: "true" # Enable Percona Server for MongoDB operator
+      - name: pg.enabled
+        value: "true" # Enable Percona Operator for PostgreSQL
+      - name: pxc.enabled
+        value: "true" # Enable Percona XtraDB Cluster operator
+        # Set automatic install plan approval for operators in this namespace
+      - name: psmdb.installPlanApproval
+        value: "Automatic"
+      - name: pg.installPlanApproval
+        value: "Automatic"
+      - name: pxc.installPlanApproval
+        value: "Automatic"
   destination:
     server: https://kubernetes.default.svc
-    namespace: databases
+    namespace: my-custom-db-namespace # <--- The target namespace is defined here
   syncPolicy:
     automated:
       prune: true
