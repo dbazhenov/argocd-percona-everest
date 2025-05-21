@@ -2,24 +2,37 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: everest
-  namespace: argocd
+  namespace: argocd # Namespace where your Argo CD application is defined
 spec:
   destination:
-    namespace: everest-system
+    namespace: everest-system # Target namespace for Everest components within the cluster
     server: https://kubernetes.default.svc
   project: default
   source:
     repoURL: https://percona.github.io/percona-helm-charts/
     chart: everest
-    targetRevision: 1.6.0
+    targetRevision: 1.6.0 # Or HEAD for the latest version of the chart
     helm:
       parameters:
       - name: server.service.type
-        value: "LoadBalancer"  # Exposes the service externally via a load balancer
+        value: "LoadBalancer"  # Exposes the main Everest UI service externally via a load balancer
       - name: upgrade.preflightChecks
         value: "false"  # Disables preflight upgrade checks for smoother updates
       - name: dbNamespace.enabled
-        value: "false"  # Prevents creation of a separate namespace for the database
+        value: "false"  # Prevents creation of a separate namespace for the database (as everest-db handles operators)
+      # PMM Configuration Parameters
+      - name: pmm.enabled
+        value: "true" # Enables the deployment of Percona Monitoring and Management (PMM) components
+      - name: pmm.service.type
+        value: "LoadBalancer" # Exposes the PMM service externally via a load balancer
+      # If you have an external PMM server, you would configure its details here.
+      # Otherwise, the chart will attempt to deploy a PMM server within your cluster.
+      # - name: pmm.server.url
+      #   value: "https://your-external-pmm-server-ip"
+      # - name: pmm.server.username
+      #   value: "admin"
+      # - name: pmm.server.password
+      #   value: "your-pmm-password"
   syncPolicy:
     automated:
       prune: false  # Prevents deletion of critical resources during sync
