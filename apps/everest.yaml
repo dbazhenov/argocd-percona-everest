@@ -15,38 +15,46 @@ spec:
     helm:
       parameters:
       - name: server.service.type
-        value: "LoadBalancer"
+        value: "LoadBalancer"  # Exposes the service externally via a load balancer
       - name: upgrade.preflightChecks
-        value: "false"
+        value: "false"  # Disables preflight upgrade checks for smoother updates
       - name: dbNamespace.enabled
-        value: "false"
+        value: "false"  # Prevents creation of a separate namespace for the database
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: false  # Prevents deletion of critical resources during sync
+      selfHeal: true  # Ensures ArgoCD automatically fixes any drifted configurations
     syncOptions:
-    - CreateNamespace=true
-    - RespectIgnoreDifferences=true
-    - ServerSideApply=true
+    - CreateNamespace=true  # Automatically creates namespaces if they do not exist
+    - RespectIgnoreDifferences=true  # Ignores changes in certain Kubernetes objects to avoid unwanted updates
+    - ServerSideApply=true  # Enables server-side apply to prevent sync issues with Custom Resource Definitions (CRDs)
   ignoreDifferences:
+  # The JWT key is randomly generated if `server.jwtKey` is not set.
+  # This prevents ArgoCD from marking it as out-of-sync on each sync.
   - group: ""
     jsonPointers:
     - /data
     kind: Secret
     name: everest-jwt
     namespace: everest-system
+  # If `server.initialAdminPassword` is not set, the chart generates a random password.
+  # This prevents ArgoCD from marking the Secret as out-of-sync.
   - group: ""
     jsonPointers:
     - /data
     kind: Secret
     name: everest-accounts
     namespace: everest-system
+  # If OLM (Operator Lifecycle Manager) is deployed without cert-manager,
+  # the below TLS certificates are randomly generated. This prevents sync issues.
   - group: ""
     jsonPointers:
     - /data
     kind: Secret
     name: packageserver-service-cert
     namespace: everest-olm
+  # APIService CA bundles and annotations are automatically updated.
+  # Ignoring differences prevents unnecessary sync failures.
   - group: apiregistration.k8s.io
     jqPathExpressions:
     - .spec.caBundle
