@@ -1,9 +1,3 @@
-Got it. I'll move the "Configure Argo CD RBAC" section to be part of the "Argo CD Installation Guide," placing it right after the initial login steps. This ensures all Argo CD setup is consolidated in one place.
-
-Here's the updated `README.md`:
-
------
-
 # Percona Everest GitOps Deployment with Argo CD
 
 This repository demonstrates how to deploy [Percona Everest](https://www.percona.com/software/percona-everest) using a GitOps approach with [Argo CD](https://argoproj.github.io/cd/). Percona Everest simplifies the deployment and management of Percona database distributions (MongoDB, PostgreSQL, MySQL) on Kubernetes.
