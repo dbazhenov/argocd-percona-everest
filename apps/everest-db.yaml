@@ -1,38 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: everest-db-namespace # A distinct name for this Argo CD Application
+  name: everest-db
   namespace: argocd
 spec:
+  destination:
+    namespace: everest
+    server: https://kubernetes.default.svc
   project: default
   source:
+    chart: everest-db-namespace
     repoURL: https://percona.github.io/percona-helm-charts/
-    chart: everest-db-namespace # The chart name
-    targetRevision: 1.6.0 # Match the version of your main everest chart for compatibility
-    helm:
-      parameters:
-        # No namespaceOverride here, as it's defined in destination.namespace
-        # Enable / Disable operators within this namespace
-      - name: psmdb.enabled
-        value: "true" # Enable Percona Server for MongoDB operator
-      - name: pg.enabled
-        value: "true" # Enable Percona Operator for PostgreSQL
-      - name: pxc.enabled
-        value: "true" # Enable Percona XtraDB Cluster operator
-        # Set automatic install plan approval for operators in this namespace
-      - name: psmdb.installPlanApproval
-        value: "Automatic"
-      - name: pg.installPlanApproval
-        value: "Automatic"
-      - name: pxc.installPlanApproval
-        value: "Automatic"
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: my-custom-db-namespace # <--- The target namespace is defined here
+    targetRevision: 1.6.0
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: true  # Automatically removes outdated resources no longer present in the desired state
+      selfHeal: true  # Detects and corrects drift by enforcing the expected resource state
     syncOptions:
     - CreateNamespace=true
     - ServerSideApply=true

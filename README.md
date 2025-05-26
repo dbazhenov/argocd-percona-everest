@@ -30,9 +30,65 @@ This repository contains Argo CD `Application` manifests that define how Percona
 
 2.  **Deploy the Everest Database Operators Application:**
 
+    Run the following command to deploy the Everest Database Operators application in ArgoCD:  
+
     ```bash
     kubectl apply -f apps/everest-db.yaml -n argocd
     ```
+
+    By default, the `everest-db` application is configured with automatic synchronization settings in ArgoCD:
+
+    ```yaml
+        automated:
+            prune: true # Automatically removes outdated resources no longer present in the desired state
+            selfHeal: true # Detects and corrects drift by enforcing the expected resource state
+    ``` 
+
+    While these settings help maintain consistency by automatically updating and fixing resources, automatic install plan approval is not recommended for production environments.
+
+    ### Handling Manual Install Plans
+
+    For **production use**, it is recommended to review and manually approve InstallPlans to maintain better control over updates and operator versions.  
+
+    #### Disabling Automatic Pruning and Self-Healing  
+
+    To prevent unintended changes in a production environment, you should disable **automatic pruning** and **self-healing** by commenting out the following lines in `everest-db.yaml`:
+
+    ```
+    # automated:
+    #   prune: true  
+    #   selfHeal: true  
+    ```
+
+    In production environments, automatic updates and corrections can introduce unexpected changes, especially when upgrading operators. To improve stability, manual synchronization management and InstallPlan approvals are recommended. 🚀
+
+    If you need more flexibility without fully disabling auto-sync, you can set prune: false to prevent automatic resource deletion.
+
+    #### Check for Pending InstallPlans
+    
+    Run the following command to check for InstallPlans requiring approval: 
+
+    ```bash
+    kubectl get installplans -n everest
+    ```
+
+    If you see an InstallPlan with APPROVAL Manual and APPROVED false, follow the steps below to approve it.
+
+    Approving an InstallPlan
+    Find the InstallPlan name and use the following command to approve it manually:
+
+    ```
+    kubectl patch installplan <installplan-name> -n everest --type merge -p '{"spec":{"approved":true}}'
+    ```
+
+    #### Verify the Approval Status
+    Once approved, verify the updated status with:
+
+    ```
+    kubectl get installplans -n everest
+    ```
+
+    After approval, OLM will continue with the installation process, and the required operators should start running.
 
 3.  **Monitor Deployment Status:**
 
@@ -97,7 +153,7 @@ After modifying the file, run `kubectl apply -f apps/everest.yaml -n argocd` aga
 1.  **Get Everest UI Admin Password:**
 
     ```bash
-    kubectl get secret everest-accounts -n everest-system -o jsonpath='{.data.SUPERUSER_PASSWORD}' | base64 --decode
+    kubectl get secret everest-accounts -n everest-system -o jsonpath='{.data.users\.yaml}' | base64 --decode  | yq '.admin.passwordHash'
     ```
 
 2.  **Get PMM Admin Password:**
